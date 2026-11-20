@@ -65,7 +65,7 @@ fun NewProjectScreen(vm: AppViewModel, onBack: () -> Unit, onCreated: (Int) -> U
     ) {
         PremiumTopBar(title = "New Project", onBack = onBack)
 
-        if (media.isEmpty()) {
+        if (media.isEmpty() && vm.importedMedia.isEmpty()) {
             EmptyState(
                 icon = Icons.Filled.PhotoLibrary,
                 title = "No media selected",
@@ -75,7 +75,7 @@ fun NewProjectScreen(vm: AppViewModel, onBack: () -> Unit, onCreated: (Int) -> U
                 onAction = onBack
             )
         } else {
-            val total = media.sumOf { if (it.isVideo) it.durationSec else 5 }
+            val total = media.sumOf { if (it.isVideo) it.durationSec else 5 } + vm.importedMedia.sumOf { if (it.isVideo) 30 else 5 }
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -83,13 +83,13 @@ fun NewProjectScreen(vm: AppViewModel, onBack: () -> Unit, onCreated: (Int) -> U
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val first = media.first()
+                val first = media.firstOrNull()
                 Box(
                     modifier = Modifier
                         .height(260.dp)
                         .aspectRatio(0.56f)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Brush.verticalGradient(listOf(first.c1, first.c2))),
+                        .background(Brush.verticalGradient(listOf(first?.c1 ?: SajiColors.Purple, first?.c2 ?: SajiColors.Bg))),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = Color.White.copy(alpha = 0.85f), modifier = Modifier.size(60.dp))
@@ -100,6 +100,22 @@ fun NewProjectScreen(vm: AppViewModel, onBack: () -> Unit, onCreated: (Int) -> U
                     style = MaterialTheme.typography.bodyMedium,
                     color = SajiColors.TextSecondary
                 )
+
+                if (vm.importedMedia.isNotEmpty()) {
+                    Spacer(Modifier.height(14.dp))
+                    Text(
+                        "Device imports: ${vm.importedMedia.size}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = SajiColors.Pink,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        "Photos and videos are attached to this project using their device media URIs.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = SajiColors.TextSecondary,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 Spacer(Modifier.height(18.dp))
                 Text(
