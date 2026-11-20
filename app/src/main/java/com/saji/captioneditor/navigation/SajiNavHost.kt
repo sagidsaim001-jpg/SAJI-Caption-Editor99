@@ -21,6 +21,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.saji.captioneditor.ui.AppViewModel
 import com.saji.captioneditor.ui.components.MainTab
@@ -29,6 +31,8 @@ import com.saji.captioneditor.ui.components.ToastHost
 import com.saji.captioneditor.ui.screens.gallery.MediaGalleryScreen
 import com.saji.captioneditor.ui.screens.gallery.NewProjectScreen
 import com.saji.captioneditor.ui.screens.home.HomeScreen
+import com.saji.captioneditor.ui.screens.editor.EditorScreen
+import com.saji.captioneditor.ui.screens.features.FeatureScreen
 import com.saji.captioneditor.ui.screens.projects.ProjectsScreen
 import com.saji.captioneditor.ui.screens.tools.ToolsScreen
 import com.saji.captioneditor.ui.theme.SajiColors
@@ -82,6 +86,74 @@ fun SajiApp() {
                         nav.navigate(Routes.editor(id)) { popUpTo(Routes.Home) }
                     }
                 )
+            }
+
+            composable(
+                route = Routes.Editor,
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { entry ->
+                EditorScreen(
+                    vm = vm,
+                    projectId = entry.arguments?.getInt("id") ?: -1,
+                    onBack = onBack,
+                    onOpenTool = { key ->
+                        val target = when (key) {
+                            "music" -> Routes.Music
+                            "audio_settings" -> Routes.AudioSettings
+                            "auto_captions" -> Routes.AutoCaptions
+                            else -> Routes.Export
+                        }
+                        nav.navigate(target)
+                    }
+                )
+            }
+
+            val featureRoutes = listOf(
+                Routes.Premium to "SAJI PRO",
+                Routes.Settings to "Settings",
+                Routes.TextEditor to "Text Editor",
+                Routes.TextStyles to "Text Styles",
+                Routes.Fonts to "Fonts",
+                Routes.TextAnimation to "Animation",
+                Routes.TextShadow to "Shadow",
+                Routes.MoreText to "More Text Tools",
+                Routes.Timing to "Caption Timing",
+                Routes.Split to "Split Clip",
+                Routes.Templates to "Templates",
+                Routes.AutoCaptions to "Auto Captions",
+                Routes.LanguageSelect to "Language",
+                Routes.CaptionStyle to "Caption Style",
+                Routes.Effects to "Effects",
+                Routes.Music to "Music",
+                Routes.AudioSettings to "Audio Settings",
+                Routes.AspectRatio to "Aspect Ratio",
+                Routes.Export to "Export",
+                Routes.ExportProgress to "Export Progress",
+                Routes.SettingsAppearance to "Appearance",
+                Routes.SettingsLanguage to "Language",
+                Routes.SettingsDefaultProject to "Default Project",
+                Routes.SettingsAspect to "Default Aspect Ratio",
+                Routes.SettingsResolution to "Default Resolution",
+                Routes.SettingsTimeline to "Timeline Settings",
+                Routes.SettingsPlayback to "Playback Settings",
+                Routes.SettingsStorage to "Storage",
+                Routes.SettingsAbout to "About SAJI",
+                Routes.SettingsPrivacy to "Privacy",
+                Routes.SettingsHelp to "Help & Support",
+                Routes.SettingsSubscription to "Subscription",
+                Routes.SettingsBenefits to "PRO Benefits",
+                Routes.SettingsRestore to "Restore Purchases"
+            )
+            featureRoutes.forEach { (routeName, screenTitle) ->
+                composable(routeName) {
+                    FeatureScreen(title = screenTitle, vm = vm, onBack = onBack)
+                }
+            }
+            composable(
+                route = Routes.TemplateDetail,
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) {
+                FeatureScreen(title = "Template Details", vm = vm, onBack = onBack)
             }
         }
 
