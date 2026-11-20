@@ -75,8 +75,9 @@ class AppViewModel : ViewModel() {
         val items = selectedMedia.mapNotNull { MediaSample.byId(it) }
         val imported = importedMedia.toList()
         val first = items.firstOrNull()
-        val total = (items.sumOf { if (it.isVideo) it.durationSec else 5 } +
-            imported.sumOf { if (it.isVideo) 30 else 5 }).coerceAtLeast(5)
+        // Explicit Long arithmetic avoids Kotlin's ambiguous Int/Long sumOf overload.
+        val total = (items.sumOf { if (it.isVideo) it.durationSec.toLong() else 5L } +
+            imported.sumOf { if (it.isVideo) 30L else 5L }).coerceAtLeast(5L).toInt()
         val project = Project(
             id = nextId++,
             name = name.trim().ifBlank { "Untitled" },
