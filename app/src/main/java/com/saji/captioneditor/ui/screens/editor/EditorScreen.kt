@@ -36,7 +36,7 @@ fun EditorScreen(
     onOpenTool: (String) -> Unit
 ) {
     val project = vm.projects.firstOrNull { it.id == projectId }
-    var caption by remember(projectId) { mutableStateOf("Your story begins here...") }
+    var caption by remember(projectId) { mutableStateOf(vm.captionFor(projectId)) }
     var selectedTab by remember { mutableStateOf("Text") }
     var selectedStyle by remember { mutableStateOf("Bold Glow") }
     var fontSize by remember { mutableFloatStateOf(30f) }
@@ -48,7 +48,7 @@ fun EditorScreen(
             title = project?.name ?: "Caption Editor",
             onBack = onBack,
             actions = {
-                TextButton(onClick = { vm.showToast("Project saved in this session") }) {
+                TextButton(onClick = { vm.saveCaption(projectId, caption) }) {
                     Icon(Icons.Filled.Save, null, tint = SajiColors.Pink)
                     Spacer(Modifier.width(4.dp))
                     Text("Save", color = SajiColors.Pink)
@@ -120,7 +120,7 @@ fun EditorScreen(
                     Text("Caption text", color = SajiColors.TextPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
-                        value = caption, onValueChange = { caption = it },
+                        value = caption, onValueChange = { caption = it; vm.saveCaption(projectId, it) },
                         modifier = Modifier.fillMaxWidth(), minLines = 2, maxLines = 4,
                         placeholder = { Text("Type your caption...") },
                         colors = OutlinedTextFieldDefaults.colors(
