@@ -75,7 +75,9 @@ fun NewProjectScreen(vm: AppViewModel, onBack: () -> Unit, onCreated: (Int) -> U
                 onAction = onBack
             )
         } else {
-            val total = media.sumOf { if (it.isVideo) it.durationSec else 5 } + vm.importedMedia.sumOf { if (it.isVideo) 30 else 5 }
+            // Keep duration arithmetic explicitly Long to resolve sumOf overload selection.
+            val total = media.sumOf { if (it.isVideo) it.durationSec.toLong() else 5L } +
+                vm.importedMedia.sumOf { if (it.isVideo) 30L else 5L }
             Column(
                 modifier = Modifier
                     .weight(1f)
