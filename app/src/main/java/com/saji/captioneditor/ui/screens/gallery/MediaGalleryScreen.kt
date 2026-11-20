@@ -1,6 +1,9 @@
 package com.saji.captioneditor.ui.screens.gallery
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -39,6 +42,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Folder
@@ -51,6 +55,7 @@ import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -69,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.saji.captioneditor.model.ImportedMedia
 import com.saji.captioneditor.model.MediaItem
 import com.saji.captioneditor.model.MediaSample
 import com.saji.captioneditor.ui.AppViewModel
@@ -88,6 +94,12 @@ private val GalleryTabs = listOf("All", "Videos", "Photos", "Albums")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MediaGalleryScreen(vm: AppViewModel, onBack: () -> Unit, onNext: () -> Unit) {
+    val context = LocalContext.current
+    val devicePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(30)
+    ) { uris ->
+        vm.addImportedMedia(uris.map { uri -> ImportedMedia(uri.toString(), context.contentResolver.getType(uri)) })
+    }
     var tab by remember { mutableIntStateOf(0) }
     var openAlbum by remember { mutableStateOf<String?>(null) }
     var searching by remember { mutableStateOf(false) }
@@ -132,6 +144,9 @@ fun MediaGalleryScreen(vm: AppViewModel, onBack: () -> Unit, onNext: () -> Unit)
                 title = openAlbum ?: "Media Gallery",
                 onBack = { if (openAlbum != null) openAlbum = null else leave() },
                 actions = {
+                    BarIcon(Icons.Filled.AddPhotoAlternate, "Import from device", onClick = {
+                        devicePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
+                    }, active = vm.importedMedia.isNotEmpty())
                     BarIcon(Icons.Filled.Search, "Search", onClick = {
                         searching = !searching
                         if (!searching) query = ""
@@ -157,9 +172,9 @@ fun MediaGalleryScreen(vm: AppViewModel, onBack: () -> Unit, onNext: () -> Unit)
                     SelectionChip(label, selected = tab == i, onClick = { tab = i; openAlbum = null })
                 }
             }
-            AnimatedVisibility(selection.isNotEmpty()) {
+            AnimatedVisibility(selection.isNotEmpty() || vm.importedMedia.isNotEmpty()) {
                 Text(
-                    "${selection.size} selected",
+                    "${selection.size + vm.importedMedia.size} selected (${vm.importedMedia.size} from device)",
                     style = MaterialTheme.typography.labelLarge,
                     color = SajiColors.Pink,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
