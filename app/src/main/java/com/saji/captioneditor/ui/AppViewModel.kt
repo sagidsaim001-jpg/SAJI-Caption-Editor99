@@ -2,6 +2,7 @@ package com.saji.captioneditor.ui
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -14,6 +15,14 @@ import com.saji.captioneditor.model.SampleData
 class AppViewModel : ViewModel() {
     val projects = mutableStateListOf<Project>().apply { addAll(SampleData.projects()) }
     val selectedMedia = mutableStateListOf<Int>()
+    private val captions = mutableStateMapOf<Int, String>()
+
+    fun captionFor(projectId: Int): String = captions[projectId] ?: "Your story begins here..."
+
+    fun saveCaption(projectId: Int, value: String) {
+        captions[projectId] = value
+        showToast("Caption saved")
+    }
     var toast by mutableStateOf<String?>(null)
 
     private var nextId = 100
