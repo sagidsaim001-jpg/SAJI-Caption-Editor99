@@ -98,6 +98,11 @@ fun MediaGalleryScreen(vm: AppViewModel, onBack: () -> Unit, onNext: () -> Unit)
     val devicePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(30)
     ) { uris ->
+        uris.forEach { uri ->
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        }
         vm.addImportedMedia(uris.map { uri -> ImportedMedia(uri.toString(), context.contentResolver.getType(uri)) })
     }
     var tab by remember { mutableIntStateOf(0) }
